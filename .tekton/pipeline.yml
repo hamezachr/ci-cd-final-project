@@ -23,11 +23,13 @@ spec:
     - name: git-clone
       taskRef:
         name: git-clone
+      runAfter:
+        - cleanup
       params:
         - name: url
-          value: "https://github.com/hamezachr/ci-cd-final-project.git" 
+          value: "https://github.com/hamezachr/ci-cd-final-project.git"
         - name: revision
-          value: "main" 
+          value: "main"
       workspaces:
         - name: output
           workspace: output
@@ -35,6 +37,8 @@ spec:
     - name: flake8-linting
       taskRef:
         name: flake8
+      runAfter:
+        - git-clone
       workspaces:
         - name: source
           workspace: output
@@ -42,26 +46,32 @@ spec:
     - name: nose-tests
       taskRef:
         name: nose
+      runAfter:
+        - git-clone
       params:
         - name: args
           value: "-v"
       workspaces:
-        - name: source
+        - name: output  # Changed from 'source' to 'output'
           workspace: output
 
     - name: buildah
       taskRef:
         name: buildah
+      runAfter:
+        - nose-tests  # Ensure buildah runs after nose-tests
       workspaces:
         - name: source
           workspace: output
       params:
         - name: IMAGE
-          value: "$(params.build-image)"  # Ensure this matches the build image parameter
+          value: "$(params.build-image)"
 
     - name: deploy
       taskRef:
         name: openshift-client
+      runAfter:
+        - buildah  # Ensure deploy runs after buildah
       params:
         - name: SCRIPT
           value: |
