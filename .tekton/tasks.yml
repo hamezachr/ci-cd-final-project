@@ -46,6 +46,12 @@ spec:
         #!/bin/bash
         set -e
         python -m pip install --upgrade pip wheel
-        pip install -r requirements.txt
+        if [ -f requirements.txt ]; then
+            echo "Installing dependencies from requirements.txt..."
+            pip install -r requirements.txt
+        else
+            echo "requirements.txt not found, skipping dependency installation."
+        fi
         nosetests $(params.args)
+
 
